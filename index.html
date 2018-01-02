@@ -1,9 +1,58 @@
 <html>
   <head>
     <title>Markdown対応文字数カウンター（仮）</title>
+    <script src="https://cdn.jsdelivr.net/npm/vue"></script>
+    <script src="assets/scripts/app.js"></script>
   </head>
   <body>
     <div id="app">
+      <h1>Markdown対応文字数カウンター（仮）</h1>
+      <div>
+        文字数: {{ count() }}
+      </div>
+      <div>
+        <textarea v-model="text" cols="100" rows="25">
+        </textarea>
+      </div>
+      <h2>設定</h2>
+      <input type="checkbox" v-model="removeCodeBlock" true-value="yes" false-value="no">
+      コードブロックを文字数に数えない
+      </input>
+      <h2>Markdown対応文字数カウンターとは</h2>
+      <ul>
+        <li>改行を無視してカウントします。</li>
+        <li>全角/半角スペースを無視してカウントします。</li>
+      </ul>
     </div>
+    <script>
+     var app = new Vue({
+         el: '#app',
+         data: {
+             text: 'ここに入力した文字をカウントしてくれます',
+             removeNewLine: 'yes',
+             removeWhiteSpace: 'yes',
+             removeCodeBlock: 'yes',
+             removeHeading: 'yes',
+         },
+         methods: {
+             stext() {
+                 text = this.text;
+                 if (this.removeNewLine === 'yes') {
+                     text = text.replace(/\r?\n/g, '');
+                 }
+                 if (this.removeCodeBlock === 'yes') {
+                     text = text.replace(/```.+?```/g, '');
+                 }
+                 if (this.removeWhiteSpace === 'yes') {
+                     text = text.replace(/ |　/g, '');
+                 }
+                 return text
+             },
+             count() {
+                 return this.stext().length
+             },
+         },
+     });
+    </script>
   </body>
 </html>
