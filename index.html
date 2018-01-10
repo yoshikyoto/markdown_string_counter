@@ -11,7 +11,7 @@
       <div>
         <input type="checkbox" v-model="ignoreCodeBlock" true-value="yes" false-value="no">コードブロック（```〜```）を文字数に含めない</input><br>
         <input type="checkbox" v-model="ignoreBlockQuote" true-value="yes" false-value="no">引用（>）を文字数に含めない</input><br>
-        <input type="checkbox" disabled="true" checked>空白と改行は文字数に含まれません</input><br>
+        <input type="checkbox" disabled="true" checked>空白や改行、Markdownの記法は文字数に含まれません</input><br>
       </div>
       <h2>文字数: {{ getCount() }}</h2>
       <div><textarea v-model="text" cols="100" rows="25"></textarea></div>
@@ -30,19 +30,26 @@
      var app = new Vue({
          el: '#app',
          data: {
-             text: 'ここに入力した 文字　をカウントしてくれます\n\n```\ncode\n```\n\n> quote\n\n* list\n- list\n\n```code2```\n\n`code3`',
-             /** 改行を文字数に含まない */
+             /** 入力された文字列 */
+             text: 'ここに入力した文字をカウントしてくれます\n\n' +
+                   '### 見出しの文字はカウントされます（15文字）\n\n\n' +
+                   '### 以下のコードブロックは無視するかどうか決められます\n\n```\ncode\n```\n（0文字 or 4文字）\n\n\n' +
+                   '### 以下のコードブロックは文字数に含まれます\n\n`code`（4文字）\n\n\n' +
+                   '### 引用は無視するかどうか決められます\n\n> quote\n\n（0文字or5文字）\n\n\n' +
+                   '### その他要素も文字部分のみカウントされます\n\n* list（4文字）\n- list（4文字）\n\n**太字**（2文字）',
+             /** 改行を文字数に含まない（markdownコンパイル時にいろいろおこるので基本yes固定） */
              ignoreNewLine: 'yes',
-             /** 空白を文字数に含まない */
+             /** 空白を文字数に含まない（markdownコンパイル時にいろいろ起こるのでyes固定） */
              ignoreWhiteSpace: 'yes',
              /** コードブロックを文字数に含まない */
              ignoreCodeBlock: 'yes',
              /** 引用を文字数に含まない */
              ignoreBlockQuote: 'yes',
              /** 見出しを文字数に含まない */
-             removeHeading: 'yes',
+             removeHeading: 'no',
          },
          methods: {
+             /** markdownをhtmlに変換 */
              render(text) {
                  return marked(text);
              },
@@ -66,6 +73,7 @@
              removeBlockQuote(html) {
                  return this.removeHtmlTagBlock('blockquote', html);
              },
+             /** 無視するコンポーネントを除去した文字列を返す */
              getFormattedText() {
                  text = this.text
                  // コードブロック除去
@@ -84,6 +92,7 @@
                  html = this.removeAllHtmlTag(html);
                  return html;
              },
+             /** 無視する文字列を除去した後文字列をカウントして返す */
              getCount() {
                  text = this.getFormattedText();
                  // 改行
