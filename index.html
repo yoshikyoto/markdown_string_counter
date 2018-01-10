@@ -2,55 +2,100 @@
   <head>
     <title>Markdown対応文字数カウンター（仮）</title>
     <script src="https://cdn.jsdelivr.net/npm/vue"></script>
-    <script src="assets/scripts/app.js"></script>
+    <script src="assets/scripts/lib/marked.js"></script>
   </head>
   <body>
     <div id="app">
       <h1>Markdown対応文字数カウンター（仮）</h1>
-      <div>
-        文字数: {{ count() }}
-      </div>
-      <div>
-        <textarea v-model="text" cols="100" rows="25">
-        </textarea>
-      </div>
       <h2>設定</h2>
-      <input type="checkbox" v-model="removeCodeBlock" true-value="yes" false-value="no">
-      コードブロックを文字数に数えない
-      </input>
-      <h2>Markdown対応文字数カウンターとは</h2>
+      <div>
+        <input type="checkbox" v-model="ignoreCodeBlock" true-value="yes" false-value="no">コードブロック（```〜```）を文字数に含めない</input><br>
+        <input type="checkbox" v-model="ignoreBlockQuote" true-value="yes" false-value="no">引用（>）を文字数に含めない</input><br>
+        <input type="checkbox" disabled="true" checked>空白と改行は文字数に含まれません</input><br>
+      </div>
+      <h2>文字数: {{ getCount() }}</h2>
+      <div><textarea v-model="text" cols="100" rows="25"></textarea></div>
+      <div>
+        処理後の文字列: <input type="text" :value="getFormattedText()" size="100"></input>
+      </div>
+      <h2>参考</h2>
       <ul>
-        <li>改行を無視してカウントします。</li>
-        <li>全角/半角スペースを無視してカウントします。</li>
+        <li><a href="http://yoshiki-utakata.hatenablog.com/entry/20180110/1515574086" target="_blank">JavaScript で new RegExp('[\s\S]', 'gm') しして、改行も含めた全ての文字列とマッチさせようとしてもうまくマッチしない</a></li>
+        <li><a href="http://kannokanno.hatenablog.com/entry/2013/06/19/132042" target="_blank">JavaScript - Markdownパーサーのshowdown.js、markdown-js、markedを簡単比較</a></li>
+        <li><a href="https://qiita.com/amay077/items/704d48130e5cf17e8654" target="_blank">Marked.js で Markdown をクライアント側でパースして表示する - Qiita</a></li>
+        <li><a href="https://jp.vuejs.org/index.html" target="_blank">Vue.js</a></li>
       </ul>
     </div>
     <script>
      var app = new Vue({
          el: '#app',
          data: {
-             text: 'ここに入力した文字をカウントしてくれます',
-             removeNewLine: 'yes',
-             removeWhiteSpace: 'yes',
-             removeCodeBlock: 'yes',
+             text: 'ここに入力した 文字　をカウントしてくれます\n\n```\ncode\n```\n\n> quote\n\n* list\n- list\n\n```code2```\n\n`code3`',
+             /** 改行を文字数に含まない */
+             ignoreNewLine: 'yes',
+             /** 空白を文字数に含まない */
+             ignoreWhiteSpace: 'yes',
+             /** コードブロックを文字数に含まない */
+             ignoreCodeBlock: 'yes',
+             /** 引用を文字数に含まない */
+             ignoreBlockQuote: 'yes',
+             /** 見出しを文字数に含まない */
              removeHeading: 'yes',
          },
          methods: {
-             stext() {
-                 text = this.text;
-                 if (this.removeNewLine === 'yes') {
-                     text = text.replace(/\r?\n/g, '');
-                 }
-                 if (this.removeCodeBlock === 'yes') {
-                     text = text.replace(/```.+?```/g, '');
-                 }
-                 if (this.removeWhiteSpace === 'yes') {
-                     text = text.replace(/ |　/g, '');
-                 }
-                 return text
+             render(text) {
+                 return marked(text);
              },
-             count() {
-                 return this.stext().length
+             /** すべてのhtmlタグを除去 */
+             removeAllHtmlTag(html) {
+                 return html.replace(/<("[^"]*"|'[^']*'|[^'">])*>/gm, '')
              },
+             /** <tag> と </tag> を除去 */
+             removeHtmlTag(tag, html) {
+                 return html.replace(new RegExp("</?" + tag + "(\"[^\"]*\"|'[^']*'|[^'\">])*>", 'gim'), '')
+             },
+             /** <tag>...</tag> をまるごと削除する */
+             removeHtmlTagBlock(tag, html) {
+                 return html.replace(new RegExp('<' + tag + '>[\\s\\S]*?</' + tag + '>' , 'gim'), '');
+             },
+             /** ``` code... ``` を除去 */
+             removeCodeBlock(text) {
+                 return text.replace(new RegExp('```[\\s\\S]*?```', 'gm'), '');
+             },
+             /** <blockquote>...</blockquote>を除去 */
+             removeBlockQuote(html) {
+                 return this.removeHtmlTagBlock('blockquote', html);
+             },
+             getFormattedText() {
+                 text = this.text
+                 // コードブロック除去
+                 // markdownのコードブロックには`と```があるがhtmlになると両方<code>になってしまうので
+                 // ```だけ除去するためにrenderするまえにコードブロックをremove
+                 if (this.ignoreCodeBlock === 'yes') {
+                     text = this.removeCodeBlock(text);
+                 }
+                 // markdownをhtml化
+                 html = this.render(text);
+                 // 引用
+                 if (this.ignoreBlockQuote === 'yes') {
+                     html = this.removeBlockQuote(html);
+                 }
+                 // htmlタグを全て削除
+                 html = this.removeAllHtmlTag(html);
+                 return html;
+             },
+             getCount() {
+                 text = this.getFormattedText();
+                 // 改行
+                 if (this.ignoreNewLine === 'yes') {
+                     text = text.replace(/\r?\n/g, '')
+                 }
+                 // 空白
+                 if (this.ignoreWhiteSpace === 'yes') {
+                     text = text.replace(/\s/g, '')
+                 }
+                 return text.length;
+             }
          },
      });
     </script>
