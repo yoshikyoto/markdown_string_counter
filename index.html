@@ -11,6 +11,7 @@
       <div>
         <input type="checkbox" v-model="ignoreCodeBlock" true-value="yes" false-value="no">コードブロック（```〜```）を文字数に含めない</input><br>
         <input type="checkbox" v-model="ignoreBlockQuote" true-value="yes" false-value="no">引用（>）を文字数に含めない</input><br>
+        <input type="checkbox" v-model="ignoreHeading" true-value="yes" false-value="no">見出し（## ...）を文字数に含めない</input><br>
         <input type="checkbox" disabled="true" checked>空白や改行、Markdownの記法は文字数に含まれません</input><br>
       </div>
       <h2>文字数: {{ getCount() }}</h2>
@@ -33,7 +34,7 @@
          data: {
              /** 入力された文字列 */
              text: 'ここに入力した文字をカウントしてくれます\n\n' +
-                   '### 見出しの文字はカウントされます（15文字）\n\n\n' +
+                   '### 見出しの文字は無視するかどうか決められます（21文字）\n\n\n' +
                    '### 以下のコードブロックは無視するかどうか決められます\n\n```\ncode\n```\n（0文字 or 4文字）\n\n\n' +
                    '### 以下のコードブロックは文字数に含まれます\n\n`code`（4文字）\n\n\n' +
                    '### 引用は無視するかどうか決められます\n\n> quote\n\n（0文字or5文字）\n\n\n' +
@@ -47,33 +48,45 @@
              /** 引用を文字数に含まない */
              ignoreBlockQuote: 'yes',
              /** 見出しを文字数に含まない */
-             removeHeading: 'no',
+             ignoreHeading: 'no',
          },
          methods: {
              /** markdownをhtmlに変換 */
              render(text) {
                  return marked(text);
              },
+
              /** すべてのhtmlタグを除去 */
              removeAllHtmlTag(html) {
                  return html.replace(/<("[^"]*"|'[^']*'|[^'">])*>/gm, '')
              },
+
              /** <tag> と </tag> を除去 */
              removeHtmlTag(tag, html) {
                  return html.replace(new RegExp("</?" + tag + "(\"[^\"]*\"|'[^']*'|[^'\">])*>", 'gim'), '')
              },
+
              /** <tag>...</tag> をまるごと削除する */
              removeHtmlTagBlock(tag, html) {
-                 return html.replace(new RegExp('<' + tag + '>[\\s\\S]*?</' + tag + '>' , 'gim'), '');
+                 return html.replace(new RegExp('<' + tag + '("[^"]*"|\'[^\']*\'|[^\'">])*>[\\s\\S]*?</' + tag + '>' , 'gim'), '');
              },
-             /** ``` code... ``` を除去 */
-             removeCodeBlock(text) {
-                 return text.replace(new RegExp('```[\\s\\S]*?```', 'gm'), '');
-             },
+
              /** <blockquote>...</blockquote>を除去 */
              removeBlockQuote(html) {
                  return this.removeHtmlTagBlock('blockquote', html);
              },
+
+             /** <h1>...</h1> <h2>...</h2> など（見出し）を除去 */
+             removeHtmlHeading(html) {
+                 console.log(html);
+                 return this.removeHtmlTagBlock('h[1-6]', html);
+             },
+
+             /** ``` code... ``` を除去 */
+             removeCodeBlock(text) {
+                 return text.replace(new RegExp('```[\\s\\S]*?```', 'gm'), '');
+             },
+
              /** 無視するコンポーネントを除去した文字列を返す */
              getFormattedText() {
                  text = this.text
@@ -89,10 +102,15 @@
                  if (this.ignoreBlockQuote === 'yes') {
                      html = this.removeBlockQuote(html);
                  }
+                 // 見出し
+                 if (this.ignoreHeading === 'yes') {
+                     html = this.removeHtmlHeading(html);
+                 }
                  // htmlタグを全て削除
                  html = this.removeAllHtmlTag(html);
                  return html;
              },
+
              /** 無視する文字列を除去した後文字列をカウントして返す */
              getCount() {
                  text = this.getFormattedText();
