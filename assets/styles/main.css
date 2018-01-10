@@ -1,0 +1,26 @@
+body {
+    font-family: 'Dotum',sans-serif;
+    background-color: #e8f8ef;
+    margin: 0px;
+}
+
+h1 {
+    background-color: #efcd46;
+    margin: 0px;
+    padding: 5px 20px;
+}
+
+h1 a {
+    text-decoration: none;
+    color: #032e13;
+}
+
+#app {
+    padding: 5px 10px;
+}
+
+h2 {
+    margin: 10px 0px;
+    padding: 0px 10px;
+    border-left: 5px solid #006543;
+}

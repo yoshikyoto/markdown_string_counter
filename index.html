@@ -1,14 +1,23 @@
 <html>
   <head>
-    <title>Markdown対応文字数カウンター（仮）</title>
+    <title>Markdown対応文字数カウンター</title>
     <meta charset="UTF-8">
     <meta name="keywords" content="文字数,カウント,計算,カウンター,markdown">
+    <link rel="stylesheet" href="assets/styles/main.css">
     <script src="https://cdn.jsdelivr.net/npm/vue"></script>
     <script src="assets/scripts/lib/marked.js"></script>
+    <!-- Global site tag (gtag.js) - Google Analytics -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=UA-77941335-3"></script>
+    <script>
+     window.dataLayer = window.dataLayer || [];
+     function gtag(){dataLayer.push(arguments);}
+     gtag('js', new Date());
+     gtag('config', 'UA-77941335-3');
+    </script>
   </head>
   <body>
+    <h1><a href="/markdown_string_counter">Markdown対応文字数カウンター</a></h1>
     <div id="app">
-      <h1>Markdown対応文字数カウンター（仮）</h1>
       <h2>設定</h2>
       <div>
         <input type="checkbox" v-model="ignoreCodeBlock" true-value="yes" false-value="no">コードブロック（```〜```）を文字数に含めない</input><br>
