@@ -31,6 +31,7 @@
         <input type="checkbox" v-model="ignoreBlockQuote" true-value="yes" false-value="no">引用（>）を文字数に含めない</input><br>
         <input type="checkbox" v-model="ignoreHeading" true-value="yes" false-value="no">見出し（## ...）を文字数に含めない</input><br>
         <input type="checkbox" disabled="true" checked>空白や改行、Markdownの記法は文字数に含まれません</input><br>
+        <input type="checkbox" disabled="true" checked>HTMLタグは文字数に含まれません（コードブロックを除く）</input>
       </div>
       <h2>文字数: {{ getCount() }}</h2>
       <div><textarea v-model="text" cols="100" rows="25"></textarea></div>
@@ -38,15 +39,24 @@
         処理後の文字列: <input type="text" :value="getFormattedText()" size="100"></input>
       </div>
       <h2>Markdown対応文字数カウンターとは？</h2>
-      Markdownで書かれた文章の文字数を（Markdown文法部分の文字数は除いて）カウントできます。ブログ記事執筆時の文字数確認などにご利用ください。<br>
-      バグ、ご要望等なにかありましたら twitter @yoshiki_utakata または GitHub にご連絡ください。
+      Markdownで書かれた文章の文字数を（Markdown文法部分の文字数は除いて）カウントできます。ブログ記事執筆時の文字数確認などにご利用ください。
+      もちろん、設定を変更すればMarkdown出ない文章の文字数も計算できます。
+      <h2>お問い合わせ</h2>
+      機能改善や要望、バグなどのお問い合わせは以下の方法で受け付けております。
+      <ul>
+        <li>Twitter: <a href="https://twitter.com/yoshiki_utakata" target="_blank">@yoshiki_utakata</a> へのリプライ・DM等</li>
+        <li>GitHub: <a href="https://github.com/yoshikyoto/markdown_string_counter" target="_blank">yoshikyoto/markdown_string_counter</a>へのIssue/プルリクエスト</li>
+      </ul>
       <h2>リンク</h2>
       <ul>
-        <li><a href="https://github.com/yoshikyoto/markdown_string_counter" target="_blank">yoshikyoto/markdown_string_counter - GitHub</a>（プルリクなどはこちら）</li>
-        <li><a href="http://yoshiki-utakata.hatenablog.com/entry/20180110/1515574086" target="_blank">JavaScript で new RegExp('[\s\S]', 'gm') しして、改行も含めた全ての文字列とマッチさせようとしてもうまくマッチしない</a></li>
-        <li><a href="http://kannokanno.hatenablog.com/entry/2013/06/19/132042" target="_blank">JavaScript - Markdownパーサーのshowdown.js、markdown-js、markedを簡単比較</a></li>
-        <li><a href="https://qiita.com/amay077/items/704d48130e5cf17e8654" target="_blank">Marked.js で Markdown をクライアント側でパースして表示する - Qiita</a></li>
-        <li><a href="https://jp.vuejs.org/index.html" target="_blank">Vue.js</a></li>
+        <li><a href="https://github.com/yoshikyoto/markdown_string_counter" target="_blank">yoshikyoto/markdown_string_counter - GitHub</a></li>
+        <li>Twitter: <a href="https://twitter.com/yoshiki_utakata" target="_blank">@yoshiki_utakata</a></li>
+        <li><a href="http://yoshiki-utakata.hatenablog.com/" target="_blank">作者ブログ</a> の記事
+          <ul>
+            <li><a href="http://yoshiki-utakata.hatenablog.com/entry/20180113/1515823998" target="_blank">Markdownで書かれた文章の文字数をカウントできるサービスを作りました</a></li>
+            <li><a href="http://yoshiki-utakata.hatenablog.com/entry/20180110/1515574086" target="_blank">JavaScript で new RegExp('[\s\S]', 'gm') して、改行も含めた全ての文字列とマッチさせようとしてもうまくマッチしない</a></li>
+          </ul>
+        </li>
       </ul>
     </div>
     <script>
